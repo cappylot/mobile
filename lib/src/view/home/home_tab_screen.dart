@@ -34,7 +34,7 @@ import 'package:lichess_mobile/src/utils/l10n.dart';
 import 'package:lichess_mobile/src/utils/l10n_context.dart';
 import 'package:lichess_mobile/src/utils/navigation.dart';
 import 'package:lichess_mobile/src/utils/screen.dart';
-import 'package:lichess_mobile/src/view/account/account_drawer.dart';
+import 'package:lichess_mobile/src/view/account/account_menu.dart';
 import 'package:lichess_mobile/src/view/account/profile_screen.dart';
 import 'package:lichess_mobile/src/view/correspondence/offline_correspondence_game_screen.dart';
 import 'package:lichess_mobile/src/view/game/game_screen.dart';
@@ -50,7 +50,6 @@ import 'package:lichess_mobile/src/view/play/quick_game_matrix.dart';
 import 'package:lichess_mobile/src/view/settings/engine_settings_screen.dart';
 import 'package:lichess_mobile/src/view/tournament/tournament_list_screen.dart';
 import 'package:lichess_mobile/src/view/user/challenge_requests_screen.dart';
-import 'package:lichess_mobile/src/view/user/player_screen.dart';
 import 'package:lichess_mobile/src/view/user/recent_games.dart';
 import 'package:lichess_mobile/src/widgets/buttons.dart';
 import 'package:lichess_mobile/src/widgets/feedback.dart';
@@ -388,21 +387,17 @@ class _HomeScreenState extends ConsumerState<HomeTabScreen> {
                       automaticallyImplyLeading: false,
                     )
                   : PlatformAppBar(
-                      title: const AppBarLichessTitle(),
-                      centerTitle: true,
-                      leading: Theme.of(context).platform == TargetPlatform.android
-                          ? null
-                          : const AccountDrawerIconButton(),
-                      actions: [
-                        const _ChallengeScreenButton(),
-                        const _PlayerScreenButton(),
-                        if (Theme.of(context).platform == TargetPlatform.android)
-                          const AndroidOverflowMenu(),
-                      ],
+                      title: Theme.of(context).platform == TargetPlatform.iOS
+                          ? AppBarLichessTitle(
+                              iconSize: Theme.of(context).textTheme.headlineSmall?.fontSize ?? 24,
+                            )
+                          : const AppBarLichessTitle(),
+                      centerTitle: false,
+                      titleTextStyle: Theme.of(context).platform == TargetPlatform.iOS
+                          ? Theme.of(context).textTheme.headlineSmall
+                          : null,
+                      actions: const [_ChallengeScreenButton(), AccountMenuButton()],
                     ),
-              drawer: Theme.of(context).platform == TargetPlatform.android
-                  ? null
-                  : const AccountDrawer(),
               body: widget.editModeEnabled
                   ? content
                   : HapticRefreshIndicator(
@@ -891,32 +886,6 @@ class PreviewGameList<T> extends StatelessWidget {
           ),
           for (final data in list.take(maxGamesToShow)) builder(data),
         ],
-      ),
-    );
-  }
-}
-
-class _PlayerScreenButton extends ConsumerWidget {
-  const _PlayerScreenButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isOnlineAsync = ref.watch(onlineStatusProvider);
-
-    return isOnlineAsync.maybeWhen(
-      data: (isOnline) => SemanticIconButton(
-        icon: const Icon(Icons.group_outlined),
-        semanticsLabel: context.l10n.players,
-        onPressed: !isOnline
-            ? null
-            : () {
-                Navigator.of(context).push(PlayerScreen.buildRoute(context));
-              },
-      ),
-      orElse: () => SemanticIconButton(
-        icon: const Icon(Icons.group_outlined),
-        semanticsLabel: context.l10n.players,
-        onPressed: null,
       ),
     );
   }
