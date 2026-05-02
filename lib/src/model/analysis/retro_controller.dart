@@ -587,7 +587,7 @@ sealed class RetroCurrentNode with _$RetroCurrentNode implements AnalysisCurrent
       return RetroCurrentNode(
         sanMove: node.sanMove,
         position: node.position,
-        isRoot: node is Root,
+        isRoot: false,
         eval: node.eval,
         serverEval: node.externalEval,
         nags: IList(node.nags),
