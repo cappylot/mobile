@@ -416,7 +416,7 @@ class _AnalysisTabView extends StatelessWidget {
       children: [
         if (tabs != null && tabs!.length > 1)
           Container(
-            decoration: BoxDecoration(color: ColorScheme.of(context).surfaceDim),
+            decoration: BoxDecoration(color: ColorScheme.of(context).surface),
             child: TabBar(
               controller: controller,
               tabs: tabs!

@@ -507,8 +507,7 @@ class _PlayerWidget extends ConsumerWidget {
               );
             }
           },
-          child: Container(
-            color: ColorScheme.of(context).surfaceContainer,
+          child: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Row(
               children: [
