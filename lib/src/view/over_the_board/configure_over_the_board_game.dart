@@ -101,7 +101,7 @@ class _ConfigureOverTheBoardGameSheetState extends ConsumerState<_ConfigureOverT
       if (type == TimeControlType.unlimited) {
         timeIncrement = const TimeIncrement.infinite();
       } else if (timeIncrement.isInfinite) {
-        timeIncrement = const TimeIncrement.blitzDefault();
+        timeIncrement = OverTheBoardPrefs.defaults.timeIncrement;
       }
     });
   }

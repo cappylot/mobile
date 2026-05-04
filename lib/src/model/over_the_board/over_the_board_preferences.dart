@@ -66,18 +66,20 @@ enum TimeControlType {
 sealed class OverTheBoardPrefs with _$OverTheBoardPrefs implements Serializable {
   const OverTheBoardPrefs._();
 
+  static const _defaultTimeIncrement = TimeIncrement(300, 3);
+
   const factory OverTheBoardPrefs({
     required bool flipPiecesAfterMove,
     required bool symmetricPieces,
     @Default(TimeControlType.realTime) TimeControlType timeControlType,
-    @Default(TimeIncrement.blitzDefault()) TimeIncrement timeIncrement,
+    @Default(OverTheBoardPrefs._defaultTimeIncrement) TimeIncrement timeIncrement,
   }) = _OverTheBoardPrefs;
 
   static const defaults = OverTheBoardPrefs(
     flipPiecesAfterMove: false,
     symmetricPieces: false,
     timeControlType: TimeControlType.realTime,
-    timeIncrement: TimeIncrement.blitzDefault(),
+    timeIncrement: _defaultTimeIncrement,
   );
 
   factory OverTheBoardPrefs.fromJson(Map<String, dynamic> json) {
