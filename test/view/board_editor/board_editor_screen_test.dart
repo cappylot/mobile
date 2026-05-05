@@ -399,9 +399,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.paste));
         await tester.pumpAndSettle();
 
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(BoardEditorScreen)),
-        );
+        final container = ProviderScope.containerOf(tester.element(find.byType(BoardEditorScreen)));
         final state = container.read(boardEditorControllerProvider(null));
         expect(state.sideToPlay, Side.black);
       });
