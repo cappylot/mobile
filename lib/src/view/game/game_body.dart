@@ -167,10 +167,12 @@ class GameBody extends ConsumerWidget {
                     },
                   ),
                 )
-              : gameState.game.correspondenceClock != null
+              : gameState.game.correspondenceClock != null &&
+                    gameState.game.lastPosition.fullmoves > 1
               ? CorrespondenceClock(
                   duration: gameState.game.correspondenceClock!.black,
                   active: gameState.activeClockSide == Side.black,
+                  resetId: gameState.game.correspondenceClock!.resetId,
                   onFlag: () => ref.read(ctrlProvider.notifier).onFlag(),
                 )
               : null,
@@ -216,10 +218,12 @@ class GameBody extends ConsumerWidget {
                     },
                   ),
                 )
-              : gameState.game.correspondenceClock != null
+              : gameState.game.correspondenceClock != null &&
+                    gameState.game.lastPosition.fullmoves > 1
               ? CorrespondenceClock(
                   duration: gameState.game.correspondenceClock!.white,
                   active: gameState.activeClockSide == Side.white,
+                  resetId: gameState.game.correspondenceClock!.resetId,
                   onFlag: () => ref.read(ctrlProvider.notifier).onFlag(),
                 )
               : null,

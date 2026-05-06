@@ -156,6 +156,9 @@ class _BodyState extends ConsumerState<_Body> {
           ? CorrespondenceClock(
               duration: game.estimatedTimeLeft(Side.black, widget.lastModified)!,
               active: activeClockSide == Side.black,
+              // lastModified changes on every move write, so it serves as a
+              // reliable signal that the server sent a new authoritative clock reading.
+              resetId: widget.lastModified.millisecondsSinceEpoch,
             )
           : null,
     );
@@ -173,6 +176,9 @@ class _BodyState extends ConsumerState<_Body> {
           ? CorrespondenceClock(
               duration: game.estimatedTimeLeft(Side.white, widget.lastModified)!,
               active: activeClockSide == Side.white,
+              // lastModified changes on every move write, so it serves as a
+              // reliable signal that the server sent a new authoritative clock reading.
+              resetId: widget.lastModified.millisecondsSinceEpoch,
             )
           : null,
     );

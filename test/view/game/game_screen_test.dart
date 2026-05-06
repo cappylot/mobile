@@ -33,6 +33,7 @@ import 'package:lichess_mobile/src/network/http.dart';
 import 'package:lichess_mobile/src/network/socket.dart';
 import 'package:lichess_mobile/src/styles/lichess_icons.dart';
 import 'package:lichess_mobile/src/view/chat/chat_screen.dart';
+import 'package:lichess_mobile/src/view/game/correspondence_clock_widget.dart';
 import 'package:lichess_mobile/src/view/game/game_screen.dart';
 import 'package:lichess_mobile/src/view/game/game_screen_providers.dart';
 import 'package:lichess_mobile/src/widgets/bottom_bar.dart';
@@ -988,6 +989,115 @@ void main() {
 
       // wait for the dong
       await tester.pump(const Duration(seconds: 500));
+    });
+  });
+
+  group('Correspondence Clock', () {
+    // Retrieves the CorrespondenceClock widget that contains the given displayed time.
+    CorrespondenceClock correspondenceClockWithTime(WidgetTester tester, String time) {
+      return tester.widget<CorrespondenceClock>(
+        find.ancestor(
+          of: find.text(time, findRichText: true),
+          matching: find.byType(CorrespondenceClock),
+        ),
+      );
+    }
+
+    testWidgets('shows correspondence clocks, not regular clocks', (tester) async {
+      await createTestGame(
+        tester,
+        clock: null,
+        pgn: 'e4 e5',
+        correspondenceClock: (
+          white: const Duration(hours: 20, minutes: 5),
+          black: const Duration(days: 1),
+          daysPerTurn: 1,
+        ),
+      );
+
+      expect(find.byType(Clock), findsNothing);
+      expect(find.byType(CorrespondenceClock), findsNWidgets(2));
+      expect(find.text('One day', findRichText: true), findsOneWidget);
+      expect(find.text('20:05', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets("active clock is white's when it is white's turn", (tester) async {
+      // pgn 'e4 e5': fullmoves = 2, white to move → white active
+      await createTestGame(
+        tester,
+        clock: null,
+        pgn: 'e4 e5',
+        correspondenceClock: (
+          white: const Duration(hours: 20, minutes: 5),
+          black: const Duration(days: 1),
+          daysPerTurn: 1,
+        ),
+      );
+
+      expect(correspondenceClockWithTime(tester, '20:05').active, isTrue);
+      expect(correspondenceClockWithTime(tester, 'One day').active, isFalse);
+
+      await tester.pump(const Duration(minutes: 2));
+
+      expect(find.text('20:05', findRichText: true), findsNothing);
+      expect(find.text('20:03', findRichText: true), findsOneWidget);
+      expect(find.text('One day', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets("active clock is black's when it is black's turn", (tester) async {
+      // pgn 'e4 e5 Nf3': black to move → black active
+      await createTestGame(
+        tester,
+        clock: null,
+        pgn: 'e4 e5 Nf3',
+        correspondenceClock: (
+          white: const Duration(days: 1),
+          black: const Duration(hours: 19, minutes: 59),
+          daysPerTurn: 1,
+        ),
+      );
+
+      expect(correspondenceClockWithTime(tester, '19:59').active, isTrue);
+      expect(correspondenceClockWithTime(tester, 'One day').active, isFalse);
+
+      await tester.pump(const Duration(minutes: 5));
+
+      expect(find.text('19:59', findRichText: true), findsNothing);
+      expect(find.text('19:54', findRichText: true), findsOneWidget);
+      expect(find.text('One day', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets('clock values and active side update after opponent move', (tester) async {
+      await createTestGame(
+        tester,
+        clock: null,
+        pgn: 'e4 e5 Nf3', // black to move → black active
+        correspondenceClock: (
+          white: const Duration(days: 1),
+          black: const Duration(hours: 10, minutes: 3),
+          daysPerTurn: 1,
+        ),
+      );
+
+      expect(correspondenceClockWithTime(tester, '10:03').active, isTrue);
+
+      await tester.pump(const Duration(minutes: 3));
+      expect(find.text('10:00', findRichText: true), findsOneWidget);
+
+      // server sends black's move with updated clock values
+      sendServerSocketMessages(testGameSocketUri, [
+        '{"t": "move", "v": 1, "d": {"ply": 4, "uci": "g8f6", "san": "Nf6", "clock": {"white": 86400, "black": 86400}}}',
+      ]);
+      await tester.pump(const Duration(milliseconds: 10));
+
+      // both clocks reset to server's authoritative values
+      expect(find.text('One day', findRichText: true), findsNWidgets(2));
+
+      await tester.pump(const Duration(seconds: 2));
+
+      // white is now active
+      expect(correspondenceClockWithTime(tester, '23:59').active, isTrue);
+      expect(correspondenceClockWithTime(tester, 'One day').active, isFalse);
     });
   });
 
