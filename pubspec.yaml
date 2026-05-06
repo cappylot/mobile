@@ -5,8 +5,8 @@ publish_to: "none"
 version: 0.23.12+002312 # See README.md for details about versioning
 
 environment:
-  # this should be updated with every new flutter stable release
   sdk: ^3.11.5
+  # this should be updated with every new flutter stable release
   flutter: 3.41.9
 
 dependencies:
