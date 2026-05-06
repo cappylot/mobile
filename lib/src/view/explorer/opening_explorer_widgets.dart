@@ -35,7 +35,7 @@ class OpeningNameHeader extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                opening.eco.isNotEmpty ? '${opening.eco} • ${opening.name}' : opening.name,
+                opening.eco.isNotEmpty ? '${opening.eco} ${opening.name}' : opening.name,
                 style: TextStyle(
                   color: ColorScheme.of(context).onSurface,
                   fontWeight: FontWeight.bold,
