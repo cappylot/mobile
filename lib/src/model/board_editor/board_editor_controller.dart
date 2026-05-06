@@ -93,7 +93,37 @@ class BoardEditorController extends Notifier<BoardEditorState> {
   }
 
   void loadFen(String fen) {
-    _updatePosition(readFen(fen).lock);
+    final fenParts = fen.trim().split(RegExp(r'\s+'));
+    final setup = Setup.parseFen(fen);
+    final pieces = readFen(fen).lock;
+
+    if (fenParts.length == 1) {
+      // Partial FEN (piece placement only): preserve existing state for side to play,
+      // castling rights, etc. Castling is filtered by piece positions in _castlingRightsPart.
+      _updatePosition(pieces);
+    } else {
+      // Full FEN: update all fields from the parsed FEN.
+      final position = Position.setupPosition(
+        state.variant.rule,
+        setup,
+        ignoreImpossibleCheck: true,
+      );
+      final castlingRights = IMap({
+        CastlingRight.whiteKing: position.castles.rookOf(Side.white, CastlingSide.king) != null,
+        CastlingRight.whiteQueen: position.castles.rookOf(Side.white, CastlingSide.queen) != null,
+        CastlingRight.blackKing: position.castles.rookOf(Side.black, CastlingSide.king) != null,
+        CastlingRight.blackQueen: position.castles.rookOf(Side.black, CastlingSide.queen) != null,
+      });
+      state = state.copyWith(
+        pieces: pieces,
+        sideToPlay: setup.turn,
+        castlingRights: castlingRights,
+        enPassantOptions: _calculateEnPassantOptions(pieces, setup.turn),
+        enPassantSquare: setup.epSquare,
+        halfmoves: setup.halfmoves,
+        fullmoves: setup.fullmoves,
+      );
+    }
   }
 
   /// Calculates the squares where an en passant capture could be possible.

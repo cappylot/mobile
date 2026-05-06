@@ -385,6 +385,25 @@ void main() {
         expect(find.byKey(const Key('f1-whitebishop')), findsNothing);
       });
 
+      testWidgets('Pasting FEN with black to move correctly sets side to play', (tester) async {
+        // Same position as above but with black to move
+        const fen = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 2 3';
+        _mockClipboard(fen);
+
+        final app = await makeTestProviderScopeApp(tester, home: const BoardEditorScreen());
+        await tester.pumpWidget(app);
+
+        await tester.tap(find.byIcon(Icons.edit));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.paste));
+        await tester.pumpAndSettle();
+
+        final container = ProviderScope.containerOf(tester.element(find.byType(BoardEditorScreen)));
+        final state = container.read(boardEditorControllerProvider(null));
+        expect(state.sideToPlay, Side.black);
+      });
+
       testWidgets('Pasting invalid FEN closes dialog and shows snackbar', (tester) async {
         _mockClipboard('not a valid fen');
 
