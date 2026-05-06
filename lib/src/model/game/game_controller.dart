@@ -731,6 +731,7 @@ class GameController extends AsyncNotifier<GameState> {
             newState = newState.copyWith.game.correspondenceClock!(
               white: data.clock!.white,
               black: data.clock!.black,
+              resetId: DateTime.now().millisecondsSinceEpoch,
             );
           }
         }
