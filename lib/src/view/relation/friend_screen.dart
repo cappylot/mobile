@@ -24,21 +24,6 @@ final followingProvider = FutureProvider.autoDispose<IList<User>>((ref) {
   return ref.withClient((client) => RelationRepository(client).getFollowing());
 });
 
-final onlineAndFollowingProvider =
-    Provider.autoDispose<AsyncValue<(IList<OnlineFriend> onlineFriends, IList<User> following)>>((
-      ref,
-    ) {
-      final onlineFriends = ref.watch(onlineFriendsProvider);
-      final following = ref.watch(followingProvider);
-
-      return switch ((onlineFriends, following)) {
-        (AsyncData(value: final o), AsyncData(value: final f)) => AsyncData((o, f)),
-        (AsyncError(error: final e, stackTrace: final st), _) => AsyncError(e, st),
-        (_, AsyncError(error: final e, stackTrace: final st)) => AsyncError(e, st),
-        _ => const AsyncLoading(),
-      };
-    });
-
 class FriendScreen extends ConsumerStatefulWidget {
   const FriendScreen({super.key});
 
@@ -67,34 +52,22 @@ class _FriendScreenState extends ConsumerState<FriendScreen> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final onlineAndFollowing = ref.watch(onlineAndFollowingProvider);
+    final onlineFriendsCount = ref.watch(onlineFriendsProvider.select((v) => v.value?.length ?? 0));
+    final followingCount = ref.watch(followingProvider.select((v) => v.value?.length ?? 0));
 
-    switch (onlineAndFollowing) {
-      case AsyncData(:final value):
-        return PlatformScaffold(
-          appBar: PlatformAppBar(
-            title: Text(context.l10n.friends),
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: <Widget>[
-                Tab(text: context.l10n.nbFriendsOnline(value.$1.length)),
-                Tab(text: context.l10n.nbFollowing(value.$2.length)),
-              ],
-            ),
-          ),
-          body: TabBarView(controller: _tabController, children: const [_Online(), _Following()]),
-        );
-      case AsyncError():
-        return PlatformScaffold(
-          appBar: PlatformAppBar(title: Text(context.l10n.friends)),
-          body: FullScreenRetryRequest(onRetry: () => ref.invalidate(onlineAndFollowingProvider)),
-        );
-      case _:
-        return PlatformScaffold(
-          appBar: PlatformAppBar(title: Text(context.l10n.friends)),
-          body: const CenterLoadingIndicator(),
-        );
-    }
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
+        title: Text(context.l10n.friends),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: <Widget>[
+            Tab(text: context.l10n.nbFriendsOnline(onlineFriendsCount)),
+            Tab(text: context.l10n.nbFollowing(followingCount)),
+          ],
+        ),
+      ),
+      body: TabBarView(controller: _tabController, children: const [_Online(), _Following()]),
+    );
   }
 }
 
