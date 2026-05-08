@@ -25,13 +25,18 @@ final followingProvider = FutureProvider.autoDispose<IList<User>>((ref) {
 });
 
 final onlineAndFollowingProvider =
-    FutureProvider.autoDispose<(IList<OnlineFriend> onlineFriends, IList<User> following)>((
+    Provider.autoDispose<AsyncValue<(IList<OnlineFriend> onlineFriends, IList<User> following)>>((
       ref,
-    ) async {
-      final onlineFriends = await ref.watch(onlineFriendsProvider.future);
-      final following = await ref.watch(followingProvider.future);
+    ) {
+      final onlineFriends = ref.watch(onlineFriendsProvider);
+      final following = ref.watch(followingProvider);
 
-      return (onlineFriends, following);
+      return switch ((onlineFriends, following)) {
+        (AsyncData(value: final o), AsyncData(value: final f)) => AsyncData((o, f)),
+        (AsyncError(error: final e, stackTrace: final st), _) => AsyncError(e, st),
+        (_, AsyncError(error: final e, stackTrace: final st)) => AsyncError(e, st),
+        _ => const AsyncLoading(),
+      };
     });
 
 class FriendScreen extends ConsumerStatefulWidget {
